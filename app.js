@@ -1,4 +1,3 @@
-
 // ===== 共通定数 =====
 const METAL_PURITY = {
   K18:   { purity: 0.75, source: 'k24' },
@@ -6,7 +5,7 @@ const METAL_PURITY = {
   PT850: { purity: 0.85, source: 'pt1000' },
 };
 const PROCESSING = { cast_oneoff: 12000, cast_mass: 1000, handmade: 15000, meleeSetPerPc: 50, centerSetPerPc: 800, polish: 1000 };
-const SHAPE_COEFF = { round: 1.0, oval: 1.05, pear: 1.05, heart: 1.10 };
+const SHAPE_COEFF = { round: 1.0, oval: 1.05, pear: 1.05, heart: 1.10, marquise: 1.08, emerald: 1.05, square: 1.03, rose: 0.90 };
 const CHAIN_PRICES = {
   "小豆0.20_45cm_PT850":13000,"小豆0.20_45cm_K18":20500,
   "ベネ0.6mm_45cm_PT850":22400,"ベネ0.6mm_45cm_K18":36000,
@@ -74,9 +73,9 @@ const STONE_DB = {
     type: "origin", // 産地証明あり
     colorGrades: ["色最高","色キレイ","くすみ感"],
     prices: {
-      "色最高": { "GIAブラジル産地証明":3000000, "鑑別書付":2000000 },
-      "色キレイ": { "GIAブラジル産地証明":1000000, "鑑別書付":600000 },
-      "くすみ感": { "GIAブラジル産地証明":300000,  "鑑別書付":200000 },
+      "色最高": { "GIAブラジル産地証明":3000000, "鑑別書付":2000000, "鑑別書なし":1400000 },
+      "色キレイ": { "GIAブラジル産地証明":1000000, "鑑別書付":600000, "鑑別書なし":420000 },
+      "くすみ感": { "GIAブラジル産地証明":300000,  "鑑別書付":200000, "鑑別書なし":140000 },
     },
     sizeCoeff: { 0.3:0.25, 0.5:0.40, 0.7:0.60, 1.0:1.0 },
     // 特例: 0.3ct以下 + GIAブラジル + 色最高 → 最低1,000,000円/ct
@@ -93,6 +92,16 @@ const STONE_DB = {
     colorGrades: ["ろうかん（色最高）","色キレイ","くすみ感"],
     prices: { "ろうかん（色最高）":150000, "色キレイ":30000, "くすみ感":12000 },
     sizeCoeff: { 0.3:0.50, 0.5:0.625, 0.7:0.813, 1.0:1.0 },
+  },
+  "アレキサンドライト": {
+    type: "origin",
+    colorGrades: ["色変わり強い","色変わり中程度","色変わり弱い"],
+    prices: {
+      "色変わり強い":   { "ブラジル産地証明":800000, "鑑別書付":550000, "鑑別書なし":385000 },
+      "色変わり中程度": { "ブラジル産地証明":300000, "鑑別書付":300000, "鑑別書なし":210000 },
+      "色変わり弱い":   { "ブラジル産地証明":150000, "鑑別書付":150000, "鑑別書なし":105000 },
+    },
+    sizeCoeff: { 0.3:0.267, 0.5:0.533, 0.7:0.733, 1.0:1.0 },
   },
 
   // ===== 標準石（共通係数） =====
@@ -112,6 +121,14 @@ const STONE_DB = {
   "ピンクサファイア":             { type:"std", basePrice:50000 },
   "イエローサファイア":           { type:"std", basePrice:60000 },
   "スピネル（レッド系）":         { type:"std", basePrice:60000 },
+  "スピネル（その他）":           { type:"std", basePrice:60000 },
+  "スフェーン":                   { type:"std", basePrice:55000 },
+  "アイオライト":                 { type:"std", basePrice:5000 },
+  "モルガナイト":                 { type:"std", basePrice:10000 },
+  "トルコ石":                     { type:"std", basePrice:3000 },
+  "ラピスラズリ":                 { type:"std", basePrice:2000 },
+  "クンツァイト":                 { type:"std", basePrice:50000 },
+  "ラリマー":                     { type:"std", basePrice:20000 },
 };
 
 // 標準石の共通色味係数
@@ -127,7 +144,11 @@ const STONE_LIST = [
   "オパール（10月）","ブラックオパール（10月）","トルマリン（10月）",
   "トパーズ（11月）","インペリアルトパーズ（11月）","シトリン（11月）",
   "タンザナイト（12月）","ジルコン（12月）",
-  "ピンクサファイア","イエローサファイア","スピネル（レッド系）",
+  "アレキサンドライト",
+  "ピンクサファイア","イエローサファイア",
+  "スピネル（レッド系）","スピネル（その他）",
+  "スフェーン","モルガナイト","クンツァイト","ラリマー",
+  "アイオライト","トルコ石","ラピスラズリ",
 ];
 
 // ===== カラーダイヤモンドデータ =====
@@ -324,9 +345,21 @@ function onStoneChange(prefix) {
   const heatRow = document.getElementById(prefix+'-coloredHeatRow');
   heatRow.classList.toggle('hidden', stone.type !== 'heat');
 
-  // 産地証明の表示切替
+  // 産地証明の表示切替 + 選択肢の動的変更
   const originRow = document.getElementById(prefix+'-coloredOriginCertRow');
   originRow.classList.toggle('hidden', stone.type !== 'origin');
+  if (stone.type === 'origin') {
+    const sel = document.getElementById(prefix+'-coloredOriginCert');
+    sel.innerHTML = '';
+    // 石種に応じた産地証明選択肢を生成
+    const firstKey = Object.keys(stone.prices)[0];
+    const certOptions = Object.keys(stone.prices[firstKey]);
+    certOptions.forEach(opt => {
+      const o = document.createElement('option');
+      o.value = opt; o.textContent = opt;
+      sel.appendChild(o);
+    });
+  }
 }
 
 // カラーダイヤグレード更新
@@ -425,6 +458,20 @@ function updateMetalPriceR() {
   }
 });
 
+// 色石1石ct自動計算
+['f','r'].forEach(prefix => {
+  const totalEl = document.getElementById(prefix+'-coloredTotalCt');
+  const countEl = document.getElementById(prefix+'-coloredCount');
+  const perEl = document.getElementById(prefix+'-coloredPerStone');
+  if (totalEl && countEl && perEl) {
+    [totalEl, countEl].forEach(el => el.addEventListener('input', () => {
+      const t = parseFloat(totalEl.value) || 0;
+      const c = parseInt(countEl.value) || 0;
+      perEl.value = (c > 0 && t > 0) ? (t/c).toFixed(3) + 'ct' : '';
+    }));
+  }
+});
+
 // 初期化
 populateStoneSelect('f-coloredStone');
 populateStoneSelect('r-coloredStone');
@@ -460,8 +507,9 @@ function calcForward() {
       centerLabel = 'ダイヤ '+color+'/'+clarity+'/'+cut+'/'+cert+(shape!=='round'?' ('+shape+')':'');
       document.getElementById('f-centerGuideDisplay').textContent = 'ガイド単価: '+fmt(centerGuide)+'円/ct';
     } else if (centerTypeF === 'colored') {
-      centerCt = parseFloat(document.getElementById('f-coloredCt').value) || 0;
+      const coloredTotalCt = parseFloat(document.getElementById('f-coloredTotalCt').value) || 0;
       centerCount = parseInt(document.getElementById('f-coloredCount').value) || 1;
+      centerCt = centerCount > 0 ? coloredTotalCt / centerCount : coloredTotalCt;
       const stoneName = document.getElementById('f-coloredStone').value;
       const colorGrade = document.getElementById('f-coloredColor').value;
       const clarity = document.getElementById('f-coloredClarity').value;
@@ -474,7 +522,7 @@ function calcForward() {
       if (stone.type === 'heat') extra = '/'+heat;
       if (stone.type === 'origin') extra = '/'+originCert;
       centerLabel = stoneName+' '+colorGrade+'/'+clarity+extra;
-      document.getElementById('f-coloredGuideDisplay').textContent = 'ガイド単価: '+fmt(centerGuide)+'円/ct';
+      document.getElementById('f-coloredGuideDisplay').textContent = 'ガイド単価: '+fmt(centerGuide)+'円/ct (1石'+centerCt.toFixed(2)+'ct)';
     } else if (centerTypeF === 'color_dia') {
       centerCt = parseFloat(document.getElementById('f-colorDiaCt').value) || 0;
       centerCount = parseInt(document.getElementById('f-colorDiaCount').value) || 1;
@@ -519,20 +567,31 @@ function calcForward() {
   const subtotal = metalCost + totalStoneCost + processingCost + chainCost;
   const tax = Math.round(subtotal * 0.1);
   const total = subtotal + tax;
-  const retail = Math.round(total * 3);
+  // 販売価格4段階（税込合計に対する倍率）
+  const priceUsed = Math.round(total * 1.3);
+  const priceOnline = Math.round(total * 1.7);
+  const priceShop = Math.round(total * 2.2);
+  const priceDept = Math.round(total * 3.0);
 
   const el = document.getElementById('forward-result');
   el.classList.remove('hidden');
   el.innerHTML = '<div class="result-card">'
     + '<div class="result-row"><span class="label">地金 ('+metal+' '+metalWeightG.toFixed(2)+'g × '+fmt(metalPPG)+'円)</span><span class="value">'+fmt(metalCost)+'円</span></div>'
-    + (hasCenter ? '<div class="result-row"><span class="label">中石 ('+centerLabel+' '+centerCt+'ct×'+centerCount+'石 @'+fmt(centerGuide)+')</span><span class="value">'+fmt(centerStoneCost)+'円</span></div>' : '')
+    + (hasCenter ? '<div class="result-row"><span class="label">中石 ('+centerLabel+' '+(centerTypeF==='colored'?(centerCt*centerCount).toFixed(2)+'ct('+centerCount+'石)':centerCt+'ct×'+centerCount+'石')+' @'+fmt(centerGuide)+')</span><span class="value">'+fmt(centerStoneCost)+'円</span></div>' : '')
     + (hasMelee ? '<div class="result-row"><span class="label">メレ ('+meleeTotalCt+'ct×'+meleeCount+'石 @'+fmt(meleeGuide)+')</span><span class="value">'+fmt(meleeStoneCost)+'円</span></div>' : '')
     + '<div class="result-row"><span class="label">加工費</span><span class="value">'+fmt(processingCost)+'円</span></div>'
     + (chainCost > 0 ? '<div class="result-row"><span class="label">チェーン</span><span class="value">'+fmt(chainCost)+'円</span></div>' : '')
     + '<div class="result-row"><span class="label">小計</span><span class="value">'+fmt(subtotal)+'円</span></div>'
     + '<div class="result-row"><span class="label">消費税 (10%)</span><span class="value">'+fmt(tax)+'円</span></div>'
-    + '<div class="result-row total"><span class="label">税込合計</span><span class="value">'+fmt(total)+'円</span></div>'
-    + '<div class="result-row" style="margin-top:8px"><span class="label">上代目安 (×3)</span><span class="value" style="color:var(--warn);font-size:16px">'+fmt(retail)+'円</span></div>'
+    + '<div class="result-row total"><span class="label">税込原価合計</span><span class="value">'+fmt(total)+'円</span></div>'
+    + '<div style="border-top:1px solid var(--gold-light);margin:10px 0;padding-top:10px">'
+    + '<div style="font-size:11px;color:var(--sub);margin-bottom:6px;letter-spacing:1px">▼ 販売価格目安（税込原価×倍率）</div>'
+    + '<div class="result-row"><span class="label">中古販売価格 (×1.3)</span><span class="value">'+fmt(priceUsed)+'円</span></div>'
+    + '<div class="result-row"><span class="label">無店舗販売価格 (×1.7)</span><span class="value">'+fmt(priceOnline)+'円</span></div>'
+    + '<div class="result-row"><span class="label">店舗販売価格 (×2.2)</span><span class="value" style="color:var(--warn)">'+fmt(priceShop)+'円</span></div>'
+    + '<div class="result-row"><span class="label">百貨店等価格 (×3.0)</span><span class="value" style="color:var(--warn);font-size:15px">'+fmt(priceDept)+'円</span></div>'
+    + '</div>'
+    + '<div style="font-size:10px;color:var(--sub);margin-top:8px;text-align:center">※ 上記は参考試算値であり、実際の市場価格を保証するものではありません</div>'
     + '</div>';
   el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -563,8 +622,9 @@ function calcReverse() {
     refGuide = calcCenterDiamondGuide(color, clarity, cut, cert, centerCt, shape);
     refLabel = 'ダイヤ '+color+'/'+clarity+'/'+cut+'/'+cert;
   } else if (centerTypeR === 'colored') {
-    centerCt = parseFloat(document.getElementById('r-coloredCt').value) || 0;
+    const coloredTotalCt = parseFloat(document.getElementById('r-coloredTotalCt').value) || 0;
     centerCount = parseInt(document.getElementById('r-coloredCount').value) || 1;
+    centerCt = centerCount > 0 ? coloredTotalCt / centerCount : coloredTotalCt;
     const shape = document.getElementById('r-coloredShape').value;
     const stoneName = document.getElementById('r-coloredStone').value;
     const colorGrade = document.getElementById('r-coloredColor').value;

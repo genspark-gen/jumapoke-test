@@ -179,6 +179,8 @@ header p { font-size: 10px; opacity: 0.6; margin-top: 4px; letter-spacing: 2px; 
           <select id="f-centerShape">
             <option value="round">ラウンド</option><option value="oval">オーバル</option>
             <option value="pear">ペアシェイプ</option><option value="heart">ハート</option>
+            <option value="marquise">マーキス</option><option value="emerald">エメラルドカット</option>
+            <option value="square">スクエアカット</option><option value="rose">ローズカット</option>
           </select></div>
       </div>
       <div class="row2">
@@ -211,16 +213,20 @@ header p { font-size: 10px; opacity: 0.6; margin-top: 4px; letter-spacing: 2px; 
       <div class="field"><label>石種</label>
         <select id="f-coloredStone" onchange="onStoneChange('f')"></select></div>
       <div class="row3">
-        <div class="field"><label>カラット数/1石 (ct)</label>
-          <input type="number" id="f-coloredCt" step="0.01" placeholder="例: 1.00"></div>
+        <div class="field"><label>合計ct</label>
+          <input type="number" id="f-coloredTotalCt" step="0.01" placeholder="例: 1.00"></div>
         <div class="field"><label>石数</label>
           <input type="number" id="f-coloredCount" value="1" min="1"></div>
-        <div class="field"><label>形状</label>
-          <select id="f-coloredShape">
-            <option value="round">ラウンド</option><option value="oval">オーバル</option>
-            <option value="pear">ペアシェイプ</option><option value="heart">ハート</option>
-          </select></div>
+        <div class="field"><label>1石ct</label>
+          <input type="text" id="f-coloredPerStone" readonly style="background:#eee"></div>
       </div>
+      <div class="field"><label>形状</label>
+        <select id="f-coloredShape">
+          <option value="round">ラウンド</option><option value="oval">オーバル</option>
+          <option value="pear">ペアシェイプ</option><option value="heart">ハート</option>
+          <option value="marquise">マーキス</option><option value="emerald">エメラルドカット</option>
+          <option value="square">スクエアカット</option><option value="rose">ローズカット</option>
+        </select></div>
       <div class="row2">
         <div class="field"><label>色味・グレード</label>
           <select id="f-coloredColor"></select></div>
@@ -238,10 +244,11 @@ header p { font-size: 10px; opacity: 0.6; margin-top: 4px; letter-spacing: 2px; 
         </select>
       </div>
       <div id="f-coloredOriginCertRow" class="field hidden">
-        <label>産地証明</label>
+        <label>産地証明・鑑別書</label>
         <select id="f-coloredOriginCert">
           <option value="GIAブラジル産地証明">GIAブラジル産地証明</option>
           <option value="鑑別書付">鑑別書付</option>
+          <option value="鑑別書なし">鑑別書なし</option>
         </select>
       </div>
       <div class="auto-price" id="f-coloredGuideDisplay">ガイド単価: ---円/ct</div>
@@ -263,6 +270,8 @@ header p { font-size: 10px; opacity: 0.6; margin-top: 4px; letter-spacing: 2px; 
           <select id="f-colorDiaShape">
             <option value="round">ラウンド</option><option value="oval">オーバル</option>
             <option value="pear">ペアシェイプ</option><option value="heart">ハート</option>
+            <option value="marquise">マーキス</option><option value="emerald">エメラルドカット</option>
+            <option value="square">スクエアカット</option><option value="rose">ローズカット</option>
           </select></div>
       </div>
       <div class="row2">
@@ -399,6 +408,8 @@ header p { font-size: 10px; opacity: 0.6; margin-top: 4px; letter-spacing: 2px; 
         <select id="r-centerShape">
           <option value="round">ラウンド</option><option value="oval">オーバル</option>
           <option value="pear">ペアシェイプ</option><option value="heart">ハート</option>
+          <option value="marquise">マーキス</option><option value="emerald">エメラルドカット</option>
+          <option value="square">スクエアカット</option><option value="rose">ローズカット</option>
         </select></div>
     </div>
     <div class="row2">
@@ -422,16 +433,20 @@ header p { font-size: 10px; opacity: 0.6; margin-top: 4px; letter-spacing: 2px; 
     <div class="field"><label>石種</label>
       <select id="r-coloredStone" onchange="onStoneChange('r')"></select></div>
     <div class="row3">
-      <div class="field"><label>カラット数/1石 (ct)</label>
-        <input type="number" id="r-coloredCt" step="0.01" placeholder="例: 1.00"></div>
+      <div class="field"><label>合計ct</label>
+        <input type="number" id="r-coloredTotalCt" step="0.01" placeholder="例: 1.00"></div>
       <div class="field"><label>石数</label>
         <input type="number" id="r-coloredCount" value="1" min="1"></div>
-      <div class="field"><label>形状</label>
-        <select id="r-coloredShape">
-          <option value="round">ラウンド</option><option value="oval">オーバル</option>
-          <option value="pear">ペアシェイプ</option><option value="heart">ハート</option>
-        </select></div>
+      <div class="field"><label>1石ct</label>
+        <input type="text" id="r-coloredPerStone" readonly style="background:#eee"></div>
     </div>
+    <div class="field"><label>形状</label>
+      <select id="r-coloredShape">
+        <option value="round">ラウンド</option><option value="oval">オーバル</option>
+        <option value="pear">ペアシェイプ</option><option value="heart">ハート</option>
+        <option value="marquise">マーキス</option><option value="emerald">エメラルドカット</option>
+        <option value="square">スクエアカット</option><option value="rose">ローズカット</option>
+      </select></div>
     <div class="row2">
       <div class="field"><label>色味・グレード</label>
         <select id="r-coloredColor"></select></div>
@@ -449,10 +464,11 @@ header p { font-size: 10px; opacity: 0.6; margin-top: 4px; letter-spacing: 2px; 
       </select>
     </div>
     <div id="r-coloredOriginCertRow" class="field hidden">
-      <label>産地証明</label>
+      <label>産地証明・鑑別書</label>
       <select id="r-coloredOriginCert">
         <option value="GIAブラジル産地証明">GIAブラジル産地証明</option>
         <option value="鑑別書付">鑑別書付</option>
+        <option value="鑑別書なし">鑑別書なし</option>
       </select>
     </div>
   </div>
@@ -473,6 +489,8 @@ header p { font-size: 10px; opacity: 0.6; margin-top: 4px; letter-spacing: 2px; 
         <select id="r-colorDiaShape">
           <option value="round">ラウンド</option><option value="oval">オーバル</option>
           <option value="pear">ペアシェイプ</option><option value="heart">ハート</option>
+          <option value="marquise">マーキス</option><option value="emerald">エメラルドカット</option>
+          <option value="square">スクエアカット</option><option value="rose">ローズカット</option>
         </select></div>
     </div>
     <div class="row2">
